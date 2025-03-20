@@ -1,0 +1,39 @@
+{
+  "id": "d9ca3176-3eb6-4915-a0f3-c01e77e3cfd7",
+  "name": "APD Codeunit Example",
+  "publisher": "Hougaard",
+  "version": "1.0.0.0",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "id": "decade24-c001-1eaf-cafe-cab1ea11abba",
+      "name": "Advanced Portal Designer",
+      "publisher": "Hougaard",
+      "version": "3.0.0.77"
+    }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "25.0.0.0",
+  "idRanges": [
+    {
+      "from": 58500,
+      "to": 58549
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "14.0",
+  "features": [
+    "NoImplicitWith"
+  ]
+}
