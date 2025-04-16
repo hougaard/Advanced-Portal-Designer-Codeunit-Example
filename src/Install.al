@@ -9,9 +9,9 @@ codeunit 58501 "APD Actions Install"
     begin
         if not APDAction.Get('ATTACHMENT.DOWNLOAD') then
             AddAction('ATTACHMENT.DOWNLOAD', 'Download Attachment');
-        if not APDAction.Get('ATTACHMENT.DOWNLOAD') then
+        if not APDAction.Get('NOTES.ADD') then
             AddAction('NOTES.ADD', 'Add Notes to sales documents');
-        if not APDAction.Get('ATTACHMENT.DOWNLOAD') then
+        if not APDAction.Get('NOTES.EDIT') then
             AddAction('NOTES.EDIT', 'Edit note on sales document');
     end;
 
@@ -24,6 +24,7 @@ codeunit 58501 "APD Actions Install"
         APDAction.Description := Description;
         APDAction."Require Authentication" := true;
         APDAction.Type := APDAction.Type::Codeunit;
+        APDAction."Object No." := Codeunit::"APD Actions";
         APDAction.Insert();
     end;
 }

@@ -48,6 +48,9 @@ codeunit 58500 "APD Actions"
             if Session."User Authenticated" and (Session."Navision number" = SalesHeader."Sell-to Customer No.") then begin
                 RecordLink.Init();
                 RecordLink.Insert(true);
+                RecordLink.Created := APD.GetLocalDateTime();
+                RecordLink.Company := CompanyName();
+                RecordLink."User ID" := UserID();
                 RecordLink."Record ID" := SalesHeader.RecordID;
                 RecordLink.Type := RecordLink.Type::Note;
                 R.WriteNote(RecordLink, APD.GetParameter(Session, 'Text'));
