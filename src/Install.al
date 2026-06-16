@@ -9,6 +9,10 @@ codeunit 58501 "APD Actions Install"
     begin
         if not APDAction.Get('ATTACHMENT.DOWNLOAD') then
             AddAction('ATTACHMENT.DOWNLOAD', 'Download Attachment');
+        if not APDAction.Get('ATTACHMENT.UPLOAD') then
+            AddAction('ATTACHMENT.UPLOAD', 'Upload Attachment');
+        if not APDAction.Get('ATTACHMENT.UPLOADTO') then
+            AddAction('ATTACHMENT.UPLOADTO', 'Upload Attachment to a specified table/record');
         if not APDAction.Get('NOTES.ADD') then
             AddAction('NOTES.ADD', 'Add Notes to sales documents');
         if not APDAction.Get('NOTES.EDIT') then

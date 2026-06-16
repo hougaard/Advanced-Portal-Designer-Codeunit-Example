@@ -19,6 +19,10 @@ codeunit 58500 "APD Actions"
             '':
                 // These are for Actions (Type Codeunit)
                 CASE UPPERCASE(APD.GetParameter(Rec, 'ACTION')) OF
+                    'ATTACHMENT.UPLOAD':
+                        UploadAttachment(Rec);
+                    'ATTACHMENT.UPLOADTO':
+                        UploadAttachmentTo(Rec);
                     'ATTACHMENT.DOWNLOAD':
                         DownloadAttachment(Rec);
                     'NOTES.ADD':
@@ -121,6 +125,76 @@ codeunit 58500 "APD Actions"
 
         end else
             error('Unknown Document');
+    end;
+
+    local procedure UploadAttachment(Session: Record "APD Session Hgd")
+    var
+        PH: Record "Purchase Header";
+        Document: Record "Document Attachment";
+        AttachMgt: Codeunit "Document Attachment Mgmt";
+        InS: InStream;
+        NameParts: List of [Text];
+    begin
+        // Purchase Order
+        if PH.Get(PH."Document Type"::Order, APD.GetParameter(Session, '38:3')) then begin
+            Session."Uploaded File".CreateInStream(InS);
+            Document.Init();
+            Document."Table ID" := DATABASE::"Purchase Header";
+            Document."No." := PH."No.";
+            Document."Document Type" := Document."Document Type"::Order;
+            Document.ImportFromStream(InS, Session."Uploaded File Name");
+            NameParts := Session."Uploaded File Name".Split('.');
+            Document."File Name" := Session."Uploaded File Name".Substring(1, strlen(Session."Uploaded File Name") - 1 - strlen(NameParts.Get(NameParts.Count)));
+            Document."File Extension" := NameParts.Get(NameParts.Count());
+            Document.insert(true);
+            APD.HttpHeader(0, APDPath + '?action=purchaseorder&38:1=1&38:3=' + PH."No.", '', '', '')
+        end else
+            error('Unkown order, cannot upload');
+    end;
+
+    local procedure UploadAttachmentTo(Session: Record "APD Session Hgd")
+    var
+        Document: Record "Document Attachment";
+        InS: InStream;
+        NameParts: List of [Text];
+        TableID: Integer;
+    begin
+        // Unlike ATTACHMENT.UPLOAD (which is hardcoded to a Purchase Order), this
+        // action lets the caller decide where the uploaded file is stored. The
+        // destination record is identified through the parameters:
+        //   TableID  - the table number to attach the file to (e.g. 36 = Sales Header)
+        //   No       - the "No." of the record the file belongs to
+        //   DocType  - (optional) Document Type ordinal, defaults to 0
+        //   LineNo   - (optional) Line No., defaults to 0
+        //
+        // As with the other examples there is no built-in validation: a developer
+        // MUST verify that the authenticated user is allowed to attach a file to
+        // the requested record before inserting it. Here we only confirm that the
+        // session is logged in - extend this with your own access checks.
+
+        if not Session."User Authenticated" then
+            error('Permission error, you must be logged in to upload attachments');
+
+        TableID := APD.GetParameterInteger(Session, 'TableID');
+        if TableID = 0 then
+            error('Missing or invalid TableID parameter');
+
+        if Session."Uploaded File Name" = '' then
+            error('No file was uploaded');
+
+        Session."Uploaded File".CreateInStream(InS);
+        Document.Init();
+        Document."Table ID" := TableID;
+        Document."No." := CopyStr(APD.GetParameter(Session, 'No'), 1, MaxStrLen(Document."No."));
+        Document."Document Type" := Enum::"Attachment Document Type".FromInteger(APD.GetParameterInteger(Session, 'DocType'));
+        Document."Line No." := APD.GetParameterInteger(Session, 'LineNo');
+        Document.ImportFromStream(InS, Session."Uploaded File Name");
+        NameParts := Session."Uploaded File Name".Split('.');
+        Document."File Name" := CopyStr(Session."Uploaded File Name".Substring(1, StrLen(Session."Uploaded File Name") - 1 - StrLen(NameParts.Get(NameParts.Count))), 1, MaxStrLen(Document."File Name"));
+        Document."File Extension" := CopyStr(NameParts.Get(NameParts.Count()), 1, MaxStrLen(Document."File Extension"));
+        Document.Insert(true);
+
+        APD.HttpHeader(0, APDPath + '?_message=Attachment uploaded', '', '', '')
     end;
 
     var
